@@ -1,0 +1,23 @@
+class BlocosLivres:
+    def __init__(self, tamanho):
+        self.tamanho = tamanho
+        self.bitmap = [0] * tamanho  # Inicializa todos os blocos como livres (0)
+
+    def alocar_bloco(self):
+        for i in range(self.tamanho):
+            if self.bitmap[i] == 0:  # Encontra o primeiro bloco livre
+                self.bitmap[i] = 1  # Marca o bloco como ocupado (1)
+                return i  # Retorna o número do bloco alocado
+        raise Exception("Não há espaço disponível na tabela de blocos livres")
+
+    def liberar_bloco(self, numero_bloco):
+        if numero_bloco < 0 or numero_bloco >= self.tamanho:  # Verifica se o número do bloco é válido
+            raise Exception("Número de bloco inválido")
+        if self.bitmap[numero_bloco] == 0:  # Verifica se o bloco já está livre
+            raise Exception("Bloco já está livre")
+        self.bitmap[numero_bloco] = 0  # Marca o bloco como livre (0)
+
+    def exibir_bitmap(self):
+        print("Bitmap de Blocos Livres:")
+        for i in range(self.tamanho):
+            print(f"Bloco {i}: {'Ocupado' if self.bitmap[i] == 1 else 'Livre'}")
