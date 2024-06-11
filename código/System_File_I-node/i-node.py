@@ -284,8 +284,62 @@ class FileSystemApp:
         message = self.file_system.set_attribute(path, attribute, value)
         messagebox.showinfo("Definir Atributo", message)
 
-# Executa a aplicação se este arquivo for executado como script principal
-if __name__ == "__main__":
+# Define a classe LoginApp para a interface de login
+class LoginApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Login")
+        
+        # Dicionário para armazenar usuários e senhas
+        self.users = {"admin": "admin123", "user": "user123"} 
+        
+        # Elementos da interface de login
+        self.username_label = tk.Label(root, text="Usuário:")
+        self.username_label.pack()
+        self.username_entry = tk.Entry(root)
+        self.username_entry.pack()
+        
+        self.password_label = tk.Label(root, text="Senha:")
+        self.password_label.pack()
+        self.password_entry = tk.Entry(root, show="*")
+        self.password_entry.pack()
+        
+        self.login_button = tk.Button(root, text="Login", command=self.login)
+        self.login_button.pack()
+
+        self.register_button = tk.Button(root, text="Registrar", command=self.register)
+        self.register_button.pack()
+
+    def login(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        if username in self.users and self.users[username] == password:
+            messagebox.showinfo("Login", "Login bem-sucedido!")
+            self.root.destroy()  # Fecha a janela de login
+            main_app()  # Abre a aplicação principal
+        else:
+            messagebox.showerror("Login", "Usuário ou senha incorretos.")
+
+    def register(self):
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        if username in self.users:
+            messagebox.showerror("Erro", "Usuário já existe!")
+        elif username and password:
+            self.users[username] = password
+            messagebox.showinfo("Registro", "Usuário registrado com sucesso!")
+        else:
+            messagebox.showerror("Erro", "Usuário e senha não podem estar vazios!")
+
+# Função para iniciar a aplicação principal
+def main_app():
     root = tk.Tk()
     app = FileSystemApp(root)
     root.mainloop()
+
+# Executa a aplicação de login se este arquivo for executado como script principal
+if __name__ == "__main__":
+    login_root = tk.Tk()
+    login_app = LoginApp(login_root)
+    login_root.mainloop()
+

@@ -1,44 +1,42 @@
-# Importa o módulo tkinter como tk para criação de interfaces gráficas
+# Importa a biblioteca tkinter e suas funcionalidades de messagebox e simpledialog
 import tkinter as tk
-# Importa messagebox e simpledialog do tkinter para exibição de mensagens e diálogos simples
 from tkinter import messagebox, simpledialog
 
-# Define a classe FileSystem para gerenciar o sistema de arquivos
+# Classe para representar um sistema de arquivos
 class FileSystem:
-    # Método inicializador da classe FileSystem
+    # Método de inicialização da classe FileSystem
     def __init__(self, total_blocks):
         # Define o número total de blocos no sistema de arquivos
         self.total_blocks = total_blocks
-        # Inicializa o conjunto de blocos livres
+        # Inicializa o conjunto de blocos livres como todos os blocos disponíveis
         self.free_blocks = set(range(total_blocks))
-        # Inicializa o dicionário de blocos alocados
+        # Dicionário para armazenar os blocos alocados com seus respectivos dados
         self.allocated_blocks = {}
-        # Inicializa o dicionário de arquivos
+        # Dicionário para armazenar os arquivos com seus blocos associados e diretórios
         self.files = {}
-        # Inicializa o dicionário de diretórios com o diretório raiz
+        # Dicionário para armazenar os diretórios e os arquivos que eles contêm
         self.directories = {'/': set()}
-        # Define o diretório atual como raiz
+        # Define o diretório atual como o diretório raiz
         self.current_directory = '/'
 
-    # Método para alocar um bloco livre
+    # Método para alocar um bloco no sistema de arquivos
     def allocate_block(self):
-        # Verifica se há blocos livres
+        # Verifica se há blocos livres disponíveis
         if len(self.free_blocks) == 0:
             raise Exception("Nenhum bloco livre disponível")
-        # Remove e retorna um bloco livre
+        # Remove e retorna um bloco livre para alocação
         block = self.free_blocks.pop()
-        # Adiciona o bloco aos blocos alocados
+        # Adiciona o bloco aos blocos alocados sem atribuir dados inicialmente
         self.allocated_blocks[block] = None
         return block
 
-    # Método para liberar um bloco alocado
+    # Método para liberar um bloco previamente alocado
     def free_block(self, block):
-        # Verifica se o bloco está alocado
+        # Verifica se o bloco está realmente alocado
         if block not in self.allocated_blocks:
             raise Exception("Bloco não está alocado")
-        # Remove o bloco dos blocos alocados
+        # Remove o bloco dos blocos alocados e o adiciona aos blocos livres
         del self.allocated_blocks[block]
-        # Adiciona o bloco aos blocos livres
         self.free_blocks.add(block)
 
     # Método para escrever dados em um bloco alocado
@@ -46,46 +44,45 @@ class FileSystem:
         # Verifica se o bloco está alocado
         if block not in self.allocated_blocks:
             raise Exception("Bloco não está alocado")
-        # Escreve os dados no bloco alocado
+        # Escreve os dados no bloco especificado
         self.allocated_blocks[block] = data
 
-    # Método para ler dados de um bloco alocado
+    # Método para ler os dados de um bloco alocado
     def read_block(self, block):
         # Verifica se o bloco está alocado
         if block not in self.allocated_blocks:
             raise Exception("Bloco não está alocado")
-        # Retorna os dados do bloco alocado
+        # Retorna os dados do bloco especificado
         return self.allocated_blocks[block]
 
-    # Método para criar um arquivo
+    # Método para criar um novo arquivo no sistema de arquivos
     def create_file(self, filename, content='', directory=None):
-        # Define o diretório como o diretório atual, se não especificado
+        # Define o diretório atual se nenhum diretório for especificado
         if directory is None:
             directory = self.current_directory
-        # Verifica se o diretório existe
+        # Verifica se o diretório especificado existe
         if directory not in self.directories:
             raise Exception("Diretório não existe")
         # Verifica se o arquivo já existe
         if filename in self.files:
             raise Exception("Arquivo já existe")
-        # Aloca um bloco para o arquivo
+        # Aloca um bloco para o novo arquivo
         block = self.allocate_block()
-        # Armazena o arquivo no dicionário de arquivos
+        # Adiciona o arquivo ao dicionário de arquivos com seu bloco e diretório associados
         self.files[filename] = (block, directory)
-        # Adiciona o arquivo ao diretório
+        # Adiciona o arquivo ao diretório especificado
         self.directories[directory].add(filename)
-        # Escreve o conteúdo no bloco, se fornecido
+        # Escreve os dados no bloco se houver conteúdo especificado
         if content:
             self.write_block(block, content)
-    
+
     # Método para visualizar o conteúdo de um arquivo
     def view_file(self, filename):
         # Verifica se o arquivo existe
         if filename not in self.files:
             raise Exception("Arquivo não existe")
-        # Obtém o bloco do arquivo
+        # Obtém o bloco associado ao arquivo e lê seus dados
         block, _ = self.files[filename]
-        # Retorna o conteúdo do bloco
         return self.read_block(block)
 
     # Método para editar o conteúdo de um arquivo
@@ -93,42 +90,38 @@ class FileSystem:
         # Verifica se o arquivo existe
         if filename not in self.files:
             raise Exception("Arquivo não existe")
-        # Obtém o bloco do arquivo
+        # Obtém o bloco associado ao arquivo e escreve os novos dados
         block, _ = self.files[filename]
-        # Escreve os novos dados no bloco
         self.write_block(block, data)
 
-    # Método para remover um arquivo
+    # Método para remover um arquivo do sistema de arquivos
     def remove_file(self, filename):
         # Verifica se o arquivo existe
         if filename not in self.files:
             raise Exception("Arquivo não existe")
-        # Obtém o bloco do arquivo
+        # Obtém o bloco associado ao arquivo e o libera
         block, _ = self.files[filename]
-        # Libera o bloco alocado
         self.free_block(block)
-        # Remove o arquivo do dicionário de arquivos
+        # Remove o arquivo dos registros de arquivos e do diretório
         del self.files[filename]
-        # Remove o arquivo do diretório atual
         self.directories[self.current_directory].remove(filename)
 
-    # Método para remover um diretório
+    # Método para remover um diretório do sistema de arquivos
     def remove_directory(self, directory):
         # Verifica se o diretório existe
         if directory not in self.directories:
             raise Exception("Diretório não existe")
-        # Verifica se o diretório é o diretório raiz
+        # Não permite a remoção do diretório raiz
         if directory == '/':
             raise Exception("Não é possível remover o diretório raiz")
         # Verifica se o diretório está vazio
         if self.list_directory(directory):
             raise Exception("Diretório não está vazio")
-        # Remove o diretório do dicionário de diretórios
+        # Remove o diretório dos registros de diretórios e do diretório atual
         del self.directories[directory]
-        # Remove o diretório do diretório atual
         self.directories[self.current_directory].remove(directory)
 
-    # Método para criar um diretório
+    # Método para criar um novo diretório no sistema de arquivos
     def create_directory(self, directory):
         # Verifica se o diretório já existe
         if directory in self.directories:
@@ -136,228 +129,305 @@ class FileSystem:
         # Verifica se o diretório atual existe
         if self.current_directory not in self.directories:
             raise Exception("Diretório atual não existe")
-        # Adiciona o novo diretório ao dicionário de diretórios
+        # Adiciona o novo diretório aos registros de diretórios
         self.directories[directory] = set()
-        # Adiciona o novo diretório ao diretório atual
         self.directories[self.current_directory].add(directory)
 
-    # Método para listar os arquivos e diretórios em um diretório
+    # Método para listar os arquivos e diretórios de um diretório específico
     def list_directory(self, directory=None):
-        # Define o diretório como o diretório atual, se não especificado
+        # Define o diretório atual se nenhum diretório for especificado
         if directory is None:
             directory = self.current_directory
-        # Verifica se o diretório existe
+        # Verifica se o diretório especificado existe
         if directory not in self.directories:
             raise Exception("Diretório não existe")
-        # Retorna a lista de arquivos e diretórios no diretório
+        # Retorna uma lista dos arquivos e diretórios no diretório especificado
         return list(self.directories[directory])
 
-    # Método para navegar para um diretório
+    # Método para navegar para um diretório específico
     def navigate(self, directory):
         # Verifica se o diretório existe
         if directory not in self.directories:
             raise Exception("Diretório não existe")
-        # Verifica se é possível navegar de volta para o diretório raiz
+        # Não permite navegar de volta para o diretório raiz se já estiver no diretório raiz
         if directory == '/' and self.current_directory != '/':
             raise Exception("Não é possível navegar de volta para o diretório raiz")
         # Define o diretório atual como o diretório especificado
         self.current_directory = directory
 
-    # Método para voltar ao diretório pai
+    # Método para navegar de volta para o diretório pai
     def navigate_back(self):
-        # Verifica se o diretório atual é o diretório raiz
+        # Retorna se o diretório atual já é o diretório raiz
         if self.current_directory == '/':
             return
-        # Obtém o diretório pai
+        # Obtém o diretório pai do diretório atual
         parent_directory = '/'.join(self.current_directory.split('/')[:-1])
-        # Define o diretório pai como raiz, se necessário
+        # Define o diretório pai como o diretório atual
         if parent_directory == '':
             parent_directory = '/'
-        # Define o diretório atual como o diretório pai
         self.current_directory = parent_directory
 
-# Define a classe FileSystemGUI para gerenciar a interface gráfica do sistema de arquivos
+    # Método para obter uma representação em bitmap dos blocos alocados no sistema de arquivos
+    def get_allocated_blocks_bitmap(self):
+        # Cria uma lista de bits representando os blocos alocados ou livres
+        bitmap = ['1' if i in self.allocated_blocks else '0' for i in range(self.total_blocks)]
+        # Retorna a representação em bitmap como uma string
+        return ' '.join(bitmap)
+
+# Classe para uma interface gráfica de usuário para o sistema de arquivos
 class FileSystemGUI:
-    # Método inicializador da classe FileSystemGUI
+    # Método de inicialização da classe FileSystemGUI
     def __init__(self, master):
         # Define a janela principal da interface gráfica
         self.master = master
         self.master.title("Sistema de Arquivos GUI")
-
-        # Inicializa o sistema de arquivos com 100 blocos
+        # Cria uma instância do sistema de arquivos com 100 blocos
         self.file_system = FileSystem(100)
-
-        # Define o diretório atual como raiz
+        # Define o diretório atual como o diretório raiz
         self.current_directory = '/'
         # Cria um rótulo para exibir o diretório atual
         self.current_path_label = tk.Label(master, text="Diretório Atual: " + self.current_directory)
         self.current_path_label.pack()
-
-        # Cria uma listbox para exibir os diretórios
+        # Cria uma caixa de listagem para exibir os diretórios
         self.directory_listbox = tk.Listbox(master, height=10, width=50)
         self.directory_listbox.pack()
-
-        # Cria uma listbox para exibir os arquivos
+        # Cria uma caixa de listagem para exibir os arquivos no diretório atual
         self.file_listbox = tk.Listbox(master, height=10, width=50)
         self.file_listbox.pack()
-
-        # Cria botões para diversas funcionalidades
+        # Cria botões para navegar, criar diretório, criar arquivo, visualizar arquivo, editar arquivo, remover arquivo,
+        # remover diretório e visualizar blocos alocados
         self.navigate_button = tk.Button(master, text="Abrir Diretório", command=self.open_directory)
         self.navigate_button.pack()
-
         self.navigate_back_button = tk.Button(master, text="Voltar", command=self.go_back)
         self.navigate_back_button.pack()
-
         self.create_directory_button = tk.Button(master, text="Criar Diretório", command=self.create_directory)
         self.create_directory_button.pack()
-
         self.create_file_button = tk.Button(master, text="Criar Arquivo", command=self.create_file)
         self.create_file_button.pack()
-
         self.view_file_button = tk.Button(master, text="Visualizar Arquivo", command=self.view_file)
         self.view_file_button.pack()
-
         self.edit_file_button = tk.Button(master, text="Editar Arquivo", command=self.edit_file)
         self.edit_file_button.pack()
-
         self.remove_file_button = tk.Button(master, text="Remover Arquivo", command=self.remove_file)
         self.remove_file_button.pack()
-
         self.remove_directory_button = tk.Button(master, text="Remover Diretório", command=self.remove_directory)
         self.remove_directory_button.pack()
+        self.view_allocated_blocks_button = tk.Button(master, text="Visualizar Blocos Ocupados", command=self.view_allocated_blocks)
+        self.view_allocated_blocks_button.pack()
+        # Atualiza a caixa de listagem de diretórios
+        self.update_directory_listbox()
 
-        # Atualiza as listas de diretórios e arquivos
-        self.update_lists()
-
-    # Método para atualizar as listas de diretórios e arquivos
-    def update_lists(self):
-        # Limpa as listboxes de diretórios e arquivos
-        self.directory_listbox.delete(0, tk.END)
-        self.file_listbox.delete(0, tk.END)
-
-        # Obtém a lista de diretórios no diretório atual
-        directories = self.file_system.list_directory()
-        # Adiciona os diretórios à listbox de diretórios
-        for directory in directories:
-            self.directory_listbox.insert(tk.END, "  " + directory + "/")
-
-        # Obtém a lista de arquivos no diretório atual
-        files = self.file_system.list_directory()
-        # Adiciona os arquivos à listbox de arquivos
-        for file in files:
-            self.file_listbox.insert(tk.END, "  " + file)
-
-        # Atualiza o rótulo do diretório atual
-        self.current_path_label.config(text="Diretório Atual: " + self.current_directory)
-
-    # Método para abrir um diretório
+    # Método para abrir um diretório selecionado na caixa de listagem de diretórios
     def open_directory(self):
-        # Obtém a seleção na listbox de diretórios
-        selection = self.directory_listbox.curselection()
-        if selection:
-            directory = self.directory_listbox.get(selection[0])
-            directory = directory.strip().rstrip('/')
-        try:
-            # Navega para o diretório selecionado
-            self.file_system.navigate(directory)
-            self.current_directory = directory
-            self.update_lists()
-        except Exception as e:
-            tk.messagebox.showerror("Erro", str(e))
+        # Obtém o índice do diretório selecionado
+        selected_directory_index = self.directory_listbox.curselection()
+        # Exibe um erro se nenhum diretório foi selecionado
+        if not selected_directory_index:
+            messagebox.showerror("Erro", "Nenhum diretório selecionado")
+            return
+        # Obtém o nome do diretório selecionado
+        selected_directory = self.directory_listbox.get(selected_directory_index)
+        # Navega para o diretório selecionado no sistema de arquivos
+        self.file_system.navigate(selected_directory)
+        # Atualiza o diretório atual e a caixa de listagem de diretórios
+        self.current_directory = self.file_system.current_directory
+        self.update_directory_listbox()
 
-    # Método para voltar ao diretório pai
+    # Método para navegar de volta para o diretório pai
     def go_back(self):
-        try:
-            # Navega para o diretório pai
-            self.file_system.navigate_back()
-            self.update_lists()
-        except Exception as e:
-            tk.messagebox.showerror("Erro", str(e))
+        # Navega para o diretório pai no sistema de arquivos
+        self.file_system.navigate_back()
+        # Atualiza o diretório atual e a caixa de listagem de diretórios
+        self.current_directory = self.file_system.current_directory
+        self.update_directory_listbox()
 
     # Método para criar um novo diretório
     def create_directory(self):
-        # Solicita o nome do novo diretório ao usuário
-        directory = tk.simpledialog.askstring("Criar Diretório", "Digite o nome do diretório:")
-        if directory:
+        # Solicita o nome do diretório ao usuário
+        directory_name = simpledialog.askstring("Criar Diretório", "Nome do Diretório:")
+        # Cria o diretório no sistema de arquivos e atualiza a caixa de listagem de diretórios
+        if directory_name:
             try:
-                # Cria o novo diretório
-                self.file_system.create_directory(directory.strip())
-                self.update_lists()
+                self.file_system.create_directory(directory_name)
+                self.update_directory_listbox()
             except Exception as e:
-                tk.messagebox.showerror("Erro", str(e))
+                messagebox.showerror("Erro", str(e))
 
     # Método para criar um novo arquivo
     def create_file(self):
-        # Solicita o nome do novo arquivo ao usuário
-        filename = tk.simpledialog.askstring("Criar Arquivo", "Digite o nome do arquivo:")
+        # Solicita o nome do arquivo ao usuário
+        filename = simpledialog.askstring("Criar Arquivo", "Nome do Arquivo:")
+        # Cria o arquivo no sistema de arquivos e atualiza a caixa de listagem de arquivos
         if filename:
             try:
-                # Cria o novo arquivo
-                self.file_system.create_file(filename.strip())
-                self.update_lists()
+                self.file_system.create_file(filename)
+                self.update_file_listbox()
             except Exception as e:
-                tk.messagebox.showerror("Erro", str(e))
+                messagebox.showerror("Erro", str(e))
 
     # Método para visualizar o conteúdo de um arquivo
     def view_file(self):
-        # Obtém a seleção na listbox de arquivos
-        selection = self.file_listbox.curselection()
-        if selection:
-            filename = self.file_listbox.get(selection[0])
-            filename = filename.strip()
-            try:
-                # Obtém o conteúdo do arquivo
-                file_content = self.file_system.view_file(filename)
-                tk.messagebox.showinfo("Conteúdo do Arquivo", file_content)
-            except Exception as e:
-                tk.messagebox.showerror("Erro", str(e))
+        # Obtém o índice do arquivo selecionado
+        selected_file_index = self.file_listbox.curselection()
+        # Exibe um erro se nenhum arquivo foi selecionado
+        if not selected_file_index:
+            messagebox.showerror("Erro", "Nenhum arquivo selecionado")
+            return
+        # Obtém o nome do arquivo selecionado
+        selected_file = self.file_listbox.get(selected_file_index)
+        # Exibe o conteúdo do arquivo em uma caixa de mensagem
+        try:
+            content = self.file_system.view_file(selected_file)
+            messagebox.showinfo("Conteúdo do Arquivo", content)
+        # Exceção se o arquivo não puder ser encontrado
+        except Exception as e:
+            messagebox.showerror("Erro", str(e))
 
     # Método para editar o conteúdo de um arquivo
     def edit_file(self):
-        # Obtém a seleção na listbox de arquivos
-        selection = self.file_listbox.curselection()
-        if selection:
-            filename = self.file_listbox.get(selection[0])
-            # Solicita o novo conteúdo do arquivo ao usuário
-            file_content = tk.simpledialog.askstring("Editar Arquivo", "Digite o novo conteúdo:")
-            if file_content:
-                try:
-                    # Edita o arquivo com o novo conteúdo
-                    self.file_system.edit_file(filename.strip(), file_content)
-                    self.update_lists()
-                except Exception as e:
-                    tk.messagebox.showerror("Erro", str(e))
+        # Obtém o índice do arquivo selecionado
+        selected_file_index = self.file_listbox.curselection()
+        # Exibe um erro se nenhum arquivo foi selecionado
+        if not selected_file_index:
+            messagebox.showerror("Erro", "Nenhum arquivo selecionado")
+            return
+        # Obtém o nome do arquivo selecionado
+        selected_file = self.file_listbox.get(selected_file_index)
+        try:
+            # Obtém o conteúdo atual do arquivo
+            current_content = self.file_system.view_file(selected_file)
+            # Solicita o novo conteúdo ao usuário
+            new_content = simpledialog.askstring("Editar Arquivo", "Novo Conteúdo:", initialvalue=current_content)
+            # Atualiza o conteúdo do arquivo se o novo conteúdo for fornecido
+            if new_content is not None:
+                self.file_system.edit_file(selected_file, new_content)
+        except Exception as e:
+            messagebox.showerror("Erro", str(e))
 
     # Método para remover um arquivo
     def remove_file(self):
-        # Obtém a seleção na listbox de arquivos
-        selection = self.file_listbox.curselection()
-        if selection:
-            filename = self.file_listbox.get(selection[0])
-            try:
-                # Remove o arquivo selecionado
-                self.file_system.remove_file(filename.strip())
-                self.update_lists()
-            except Exception as e:
-                tk.messagebox.showerror("Erro", str(e))
-    
+        # Obtém o índice do arquivo selecionado
+        selected_file_index = self.file_listbox.curselection()
+        # Exibe um erro se nenhum arquivo foi selecionado
+        if not selected_file_index:
+            messagebox.showerror("Erro", "Nenhum arquivo selecionado")
+            return
+        # Obtém o nome do arquivo selecionado
+        selected_file = self.file_listbox.get(selected_file_index)
+        try:
+            # Remove o arquivo do sistema de arquivos e atualiza a caixa de listagem de arquivos
+            self.file_system.remove_file(selected_file)
+            self.update_file_listbox()
+        except Exception as e:
+            messagebox.showerror("Erro", str(e))
+
     # Método para remover um diretório
     def remove_directory(self):
-        # Obtém a seleção na listbox de diretórios
-        selection = self.directory_listbox.curselection()
-        if selection:
-            directory = self.directory_listbox.get(selection[0])
-            directory = directory.strip().rstrip('/')
-            try:
-                # Remove o diretório selecionado
-                self.file_system.remove_directory(directory)
-                self.update_lists()
-            except Exception as e:
-                tk.messagebox.showerror("Erro", str(e))
+        # Obtém o índice do diretório selecionado
+        selected_directory_index = self.directory_listbox.curselection()
+        # Exibe um erro se nenhum diretório foi selecionado
+        if not selected_directory_index:
+            messagebox.showerror("Erro", "Nenhum diretório selecionado")
+            return
+        # Obtém o nome do diretório selecionado
+        selected_directory = self.directory_listbox.get(selected_directory_index)
+        try:
+            # Remove o diretório do sistema de arquivos e atualiza a caixa de listagem de diretórios
+            self.file_system.remove_directory(selected_directory)
+            self.update_directory_listbox()
+        except Exception as e:
+            messagebox.showerror("Erro", str(e))
 
-# Cria a janela principal da interface gráfica
+    # Método para atualizar a caixa de listagem de diretórios
+    def update_directory_listbox(self):
+        # Limpa a caixa de listagem de diretórios
+        self.directory_listbox.delete(0, tk.END)
+        # Obtém a lista de diretórios no diretório atual
+        directories = self.file_system.list_directory()
+        # Adiciona os diretórios à caixa de listagem
+        for directory in directories:
+            self.directory_listbox.insert(tk.END, directory)
+        # Atualiza o rótulo do diretório atual
+        self.current_path_label.config(text="Diretório Atual: " + self.current_directory)
+        # Atualiza a caixa de listagem de arquivos
+        self.update_file_listbox()
+
+    # Método para atualizar a caixa de listagem de arquivos no diretório atual
+    def update_file_listbox(self):
+        # Limpa a caixa de listagem de arquivos
+        self.file_listbox.delete(0, tk.END)
+        # Obtém a lista de arquivos no diretório atual
+        files = self.file_system.list_directory()
+        # Adiciona os arquivos à caixa de listagem
+        for filename in files:
+            if filename in self.file_system.files:
+                self.file_listbox.insert(tk.END, filename)
+
+    # Método para visualizar os blocos alocados no sistema de arquivos
+    def view_allocated_blocks(self):
+        # Obtém a representação em bitmap dos blocos alocados
+        bitmap = self.file_system.get_allocated_blocks_bitmap()
+        # Exibe a representação em bitmap em uma caixa de mensagem
+        messagebox.showinfo("Blocos Ocupados", bitmap)
+
+# Classe para uma aplicação de login
+class LoginApp:
+    # Método de inicialização da classe LoginApp
+    def __init__(self, master):
+        # Define a janela principal da aplicação
+        self.master = master
+        self.master.title("Login")
+        # Dicionário para armazenar os usuários e senhas
+        self.users = {}
+        # Cria rótulos e entradas para nome de usuário e senha
+        self.username_label = tk.Label(master, text="Nome de usuário:")
+        self.username_label.pack()
+        self.username_entry = tk.Entry(master)
+        self.username_entry.pack()
+        self.password_label = tk.Label(master, text="Senha:")
+        self.password_label.pack()
+        self.password_entry = tk.Entry(master, show="*")
+        self.password_entry.pack()
+        # Cria botões para login e registro
+        self.login_button = tk.Button(master, text="Login", command=self.login)
+        self.login_button.pack()
+        self.register_button = tk.Button(master, text="Registrar", command=self.register)
+        self.register_button.pack()
+
+    # Método para realizar o login
+    def login(self):
+        # Obtém o nome de usuário e senha digitados pelo usuário
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        # Verifica se o nome de usuário e senha correspondem a um usuário registrado
+        if username in self.users and self.users[username] == password:
+            # Exibe uma mensagem de login bem-sucedido e abre a interface gráfica do sistema de arquivos
+            messagebox.showinfo("Login bem-sucedido", "Bem-vindo, " + username + "!")
+            self.master.destroy()
+            main_window = tk.Tk()
+            FileSystemGUI(main_window)
+            main_window.mainloop()
+        else:
+            # Exibe uma mensagem de erro se o login falhar
+            messagebox.showerror("Erro de login", "Nome de usuário ou senha inválidos")
+
+    # Método para registrar um novo usuário
+    def register(self):
+        # Obtém o nome de usuário e senha digitados pelo usuário
+        username = self.username_entry.get()
+        password = self.password_entry.get()
+        # Verifica se o nome de usuário já está em uso
+        if username in self.users:
+            messagebox.showerror("Erro de registro", "Nome de usuário já está em uso")
+        else:
+            # Registra o novo usuário e exibe uma mensagem de registro bem-sucedido
+            self.users[username] = password
+            messagebox.showinfo("Registro bem-sucedido", "Usuário registrado com sucesso")
+
+# Cria a janela principal da aplicação de login
 root = tk.Tk()
-# Inicializa a aplicação do sistema de arquivos
-app = FileSystemGUI(root)
+# Inicializa a aplicação de login
+app = LoginApp(root)
 # Inicia o loop principal da interface gráfica
 root.mainloop()
+
