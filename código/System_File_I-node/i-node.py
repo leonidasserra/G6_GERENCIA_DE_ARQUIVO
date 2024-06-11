@@ -182,6 +182,13 @@ class FileSystemApp:
         self.list_dir_button = tk.Button(root, text="Listar Diretório", command=self.list_directory)
         self.list_dir_button.pack()
 
+        # Botões para definir e obter atributos
+        self.set_attr_button = tk.Button(root, text="Definir Atributo", command=self.set_attr)
+        self.set_attr_button.pack()
+
+        self.get_attr_button = tk.Button(root, text="Obter Atributo", command=self.get_attr)
+        self.get_attr_button.pack()
+
     # Atualiza o rótulo de exibição do caminho atual
     def update_path_display(self):
         self.path_display.config(text=self.current_path)
@@ -270,19 +277,30 @@ class FileSystemApp:
             messagebox.showinfo("Conteúdo do Diretório", content_text)
         else:
             messagebox.showerror("Erro", "Erro ao listar o diretório.")
-    
-    # Obtém o valor de um atributo de um nó
-    def get_attribute(self, path, attribute):
-        value = self.file_system.get_attribute(path, attribute)
-        if value is not None:
-            messagebox.showinfo("Valor do Atributo", f"O valor do atributo '{attribute}' em '{path}' é '{value}'.")
-        else:
-            messagebox.showerror("Erro", "Erro ao obter o valor do atributo.")
 
-    # Define o valor de um atributo de um nó
-    def set_attribute(self, path, attribute, value):
-        message = self.file_system.set_attribute(path, attribute, value)
-        messagebox.showinfo("Definir Atributo", message)
+    # Define o valor de um atributo
+    def set_attr(self):
+        path = simpledialog.askstring("Definir Atributo", "Digite o caminho do nó:")
+        attribute = simpledialog.askstring("Definir Atributo", "Digite o nome do atributo:")
+        value = simpledialog.askstring("Definir Atributo", "Digite o valor do atributo:")
+        if path and attribute and value:
+            message = self.file_system.set_attribute(path, attribute, value)
+            messagebox.showinfo("Definir Atributo", message)
+        else:
+            messagebox.showerror("Erro", "Todos os campos são obrigatórios.")
+
+    # Obtém o valor de um atributo
+    def get_attr(self):
+        path = simpledialog.askstring("Obter Atributo", "Digite o caminho do nó:")
+        attribute = simpledialog.askstring("Obter Atributo", "Digite o nome do atributo:")
+        if path and attribute:
+            value = self.file_system.get_attribute(path, attribute)
+            if value is not None:
+                messagebox.showinfo("Valor do Atributo", f"O valor do atributo '{attribute}' em '{path}' é '{value}'.")
+            else:
+                messagebox.showerror("Erro", "Erro ao obter o valor do atributo.")
+        else:
+            messagebox.showerror("Erro", "Todos os campos são obrigatórios.")
 
 # Define a classe LoginApp para a interface de login
 class LoginApp:
@@ -342,4 +360,3 @@ if __name__ == "__main__":
     login_root = tk.Tk()
     login_app = LoginApp(login_root)
     login_root.mainloop()
-

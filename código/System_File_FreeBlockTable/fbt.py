@@ -18,6 +18,8 @@ class FileSystem:
         self.directories = {'/': set()}
         # Define o diretório atual como o diretório raiz
         self.current_directory = '/'
+        # Dicionário para armazenar os atributos dos arquivos e diretórios
+        self.attributes = {}
 
     # Método para alocar um bloco no sistema de arquivos
     def allocate_block(self):
@@ -174,6 +176,20 @@ class FileSystem:
         # Retorna a representação em bitmap como uma string
         return ' '.join(bitmap)
 
+
+    def set_attribute(self, path, attribute, value):
+        if path not in self.files and path not in self.directories:
+            raise Exception("Caminho não encontrado")
+        if path not in self.attributes:
+            self.attributes[path] = {}
+        self.attributes[path][attribute] = value
+        return f"Atributo '{attribute}' definido para '{path}' com valor '{value}'"
+
+    def get_attribute(self, path, attribute):
+        if path in self.attributes and attribute in self.attributes[path]:
+            return self.attributes[path][attribute]
+        return None
+
 # Classe para uma interface gráfica de usuário para o sistema de arquivos
 class FileSystemGUI:
     # Método de inicialização da classe FileSystemGUI
@@ -214,6 +230,10 @@ class FileSystemGUI:
         self.remove_directory_button.pack()
         self.view_allocated_blocks_button = tk.Button(master, text="Visualizar Blocos Ocupados", command=self.view_allocated_blocks)
         self.view_allocated_blocks_button.pack()
+        self.set_attr_button = tk.Button(master, text="Definir Atributo", command=self.set_attr)
+        self.set_attr_button.pack()
+        self.get_attr_button = tk.Button(master, text="Obter Atributo", command=self.get_attr)
+        self.get_attr_button.pack()
         # Atualiza a caixa de listagem de diretórios
         self.update_directory_listbox()
 
@@ -369,7 +389,30 @@ class FileSystemGUI:
         bitmap = self.file_system.get_allocated_blocks_bitmap()
         # Exibe a representação em bitmap em uma caixa de mensagem
         messagebox.showinfo("Blocos Ocupados", bitmap)
+ 
+    # Define o valor de um atributo
+    def set_attr(self):
+        path = simpledialog.askstring("Definir Atributo", "Digite o caminho do nó:")
+        attribute = simpledialog.askstring("Definir Atributo", "Digite o nome do atributo:")
+        value = simpledialog.askstring("Definir Atributo", "Digite o valor do atributo:")
+        if path and attribute and value:
+            message = self.file_system.set_attribute(path, attribute, value)
+            messagebox.showinfo("Definir Atributo", message)
+        else:
+            messagebox.showerror("Erro", "Todos os campos são obrigatórios.")
 
+# Método para obter o valor de um atributo
+    def get_attr(self):
+        path = simpledialog.askstring("Obter Atributo", "Digite o caminho do nó (a partir do diretório atual):")
+        attribute = simpledialog.askstring("Obter Atributo", "Digite o nome do atributo:")
+        if path and attribute:
+            value = self.file_system.get_attribute(path, attribute)
+            if value is not None:
+                messagebox.showinfo("Valor do Atributo", f"O valor do atributo '{attribute}' em '{path}' é '{value}'.")
+            else:
+                messagebox.showerror("Erro", f"O atributo '{attribute}' em '{path}' não foi encontrado.")
+        else:
+            messagebox.showerror("Erro", "Todos os campos são obrigatórios.")
 # Classe para uma aplicação de login
 class LoginApp:
     # Método de inicialização da classe LoginApp
@@ -430,4 +473,3 @@ root = tk.Tk()
 app = LoginApp(root)
 # Inicia o loop principal da interface gráfica
 root.mainloop()
-
