@@ -328,6 +328,7 @@ class LoginApp:
         self.register_button = tk.Button(root, text="Registrar", command=self.register)
         self.register_button.pack()
 
+    # Executa o login
     def login(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
@@ -338,6 +339,7 @@ class LoginApp:
         else:
             messagebox.showerror("Login", "Usuário ou senha incorretos.")
 
+    # Registra novos usuários
     def register(self):
         username = self.username_entry.get()
         password = self.password_entry.get()
