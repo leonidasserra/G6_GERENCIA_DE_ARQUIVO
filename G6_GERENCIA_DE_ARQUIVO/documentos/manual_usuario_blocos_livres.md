@@ -8,8 +8,8 @@ Este manual descreve como utilizar a interface gráfica de um sistema de arquivo
 
 ### Requisitos
 
-- Python instalado (versão 3.x recomendada).
-- Biblioteca `tkinter` instalada (normalmente vem com a instalação padrão do Python).
+- Python instalado (versão 3.11.0 recomendada).
+- Biblioteca `tkinter` instalada (versão 8.6 recomendada).
 
 ### Instalação
 
