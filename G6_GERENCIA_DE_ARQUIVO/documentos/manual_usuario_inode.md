@@ -13,6 +13,15 @@ Este manual descreve como utilizar a interface gráfica de um sistema de arquivo
 - Python instalado (versão 3.11.0 recomendada).
 - Biblioteca `tkinter` instalada (versão 8.6 recomendada).
 
+## Instalação
+
+Caso a biblioteca Tkinter não esteja instalada, digite o seguinte comando no prompt da sua IDE:
+
+```sh
+pip install tk
+```
+
+
 ## Execução
 
 Para executar o programa, salve o código fornecido em um arquivo Python (`sistema_de_arquivos_gui.py`) e execute-o com o comando:
@@ -121,4 +130,4 @@ Obtém o valor de um atributo de um arquivo ou diretório. O usuário insere o c
 
 ## Conclusão
 
-Este manual cobre as funcionalidades básicas da interface gráfica do sistema de arquivos. Em caso de dúvidas, verifique o código fonte para entender melhor o funcionamento interno.
+Este manual cobre as funcionalidades básicas da interface gráfica do sistema de arquivos em i-node. Em caso de dúvidas, verifique o código fonte para entender melhor o funcionamento interno.

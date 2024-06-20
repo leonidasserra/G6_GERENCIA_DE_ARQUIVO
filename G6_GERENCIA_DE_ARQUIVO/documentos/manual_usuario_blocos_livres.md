@@ -11,6 +11,14 @@ Este manual descreve como utilizar a interface gráfica de um sistema de arquivo
 - Python instalado (versão 3.x recomendada).
 - Biblioteca `tkinter` instalada (normalmente vem com a instalação padrão do Python).
 
+### Instalação
+
+Caso a biblioteca Tkinter não esteja instalada, digite o seguinte comando no prompt da sua IDE:
+
+```sh
+pip install tk
+```
+
 ### Execução
 
 Para executar o programa, salve o código fornecido em um arquivo Python (`sistema_de_arquivos.py`) e execute-o com o comando:
@@ -96,6 +104,6 @@ Uma caixa de listagem exibe os arquivos disponíveis no diretório atual.
 - **Erro ao definir atributo:** Caminho, atributo ou valor inválido.
 - **Erro ao obter atributo:** Caminho ou atributo inválido.
 
-## Fim
+## Conclusão
 
-Este manual cobre as funcionalidades básicas da interface gráfica do sistema de arquivos. Em caso de dúvidas, verifique o código fonte para entender melhor o funcionamento interno.
+Este manual cobre as funcionalidades básicas da interface gráfica do sistema de arquivos em blocos livres. Em caso de dúvidas, verifique o código fonte para entender melhor o funcionamento interno.
